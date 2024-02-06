@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "DiaBuddy-AI-backend"
+version = "0.1.0"
+description = "Backend of DiaBuddy-AI"
+authors = ["HK <m.a.hansaka@gmail.com>"]
+readme = "README.md"
+packages = [
+    { include = "app" },
+]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.12"
+uvicorn = "^0.23.2"
+langserve = {extras = ["server"], version = ">=0.0.30"}
+pydantic = "<2"
+unstructured = {extras = ["all-docs"], version = "^0.12.3"}
+faiss-cpu = "^1.7.4"
+langchain-openai = "^0.0.5"
+langchain-experimental = "^0.0.50"
+tqdm = "^4.66.1"
+
+
+[tool.poetry.group.dev.dependencies]
+langchain-cli = ">=0.0.15"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
