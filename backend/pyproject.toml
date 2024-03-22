@@ -16,7 +16,7 @@ pydantic = "^2.6.4"
 unstructured = {extras = ["all-docs"], version = "^0.12.3"}
 faiss-cpu = "^1.8.0"
 langchain-openai = "^0.1.0"
-langchain-experimental = "^0.0.50"
+langchain-experimental = "^0.0.52"
 tqdm = "^4.66.2"
 langchain = "^0.1.5"
 sentence-transformers = "^2.5.1"
