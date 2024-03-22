@@ -11,19 +11,19 @@ packages = [
 [tool.poetry.dependencies]
 python = ">=3.11,<3.12"
 uvicorn = "^0.23.2"
-langserve = {extras = ["server"], version = ">=0.0.30"}
-pydantic = "<2"
+langserve = {extras = ["server"], version = ">=0.0.51"}
+pydantic = "^2.6.4"
 unstructured = {extras = ["all-docs"], version = "^0.12.3"}
-faiss-cpu = "^1.7.4"
-langchain-openai = "^0.0.5"
+faiss-cpu = "^1.8.0"
+langchain-openai = "^0.1.0"
 langchain-experimental = "^0.0.50"
-tqdm = "^4.66.1"
+tqdm = "^4.66.2"
 langchain = "^0.1.5"
-sentence-transformers = "^2.3.1"
+sentence-transformers = "^2.5.1"
 
 
 [tool.poetry.group.dev.dependencies]
-langchain-cli = ">=0.0.15"
+langchain-cli = ">=0.0.21"
 
 [build-system]
 requires = ["poetry-core"]
