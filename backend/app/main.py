@@ -1,4 +1,5 @@
 import os
+from operator import itemgetter
 from typing import Dict, TypedDict
 
 from dotenv import load_dotenv
@@ -8,29 +9,30 @@ from langchain_community.document_loaders import DirectoryLoader, UnstructuredPD
 from langchain_community.vectorstores.faiss import FAISS
 from langchain_core.messages import SystemMessage
 from langchain_core.prompts import MessagesPlaceholder, HumanMessagePromptTemplate, ChatPromptTemplate
-from langchain_core.runnables import RunnablePassthrough
+from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_experimental.text_splitter import SemanticChunker
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 
 # Load environment variables.
-load_dotenv("../.env")
+load_dotenv()
 
 # Define constants.
-DATA_PATH = "../data"
-FAISS_INDEX_PATH = "../vectorstores/faiss"
-
+DATA_PATH = "data"
+FAISS_INDEX_PATH = "vectorstores/faiss"
 # Define the embeddings.
+# TODO eval embeddings
 openAIEmbeddings = OpenAIEmbeddings()
-
 # Load or create the FAISS index.
+# TODO eval indexes
 if len(os.listdir(FAISS_INDEX_PATH)):
     # Index file exists, load it
     print("Loading existing FAISS index from:", FAISS_INDEX_PATH)
-    vector_db = FAISS.load_local(FAISS_INDEX_PATH, openAIEmbeddings)
+    vector_db = FAISS.load_local(FAISS_INDEX_PATH, openAIEmbeddings, allow_dangerous_deserialization=True)
 else:
     # Index file doesn't exist, create a new one
     # Define the document loader.
+    # TODO eval loaders
     documentLoader = DirectoryLoader(
         path=DATA_PATH,
         glob="**/*.pdf",
@@ -42,14 +44,15 @@ else:
     loaded_documents = documentLoader.load()
 
     # Add metadata.
-    for document in loaded_documents:
-        document.metadata['file_name'] = document.metadata['source']
+    # for document in loaded_documents:
+    #     document.metadata['file_name'] = document.metadata['source']
 
     # Split the documents.
     splitted_documents = SemanticChunker(
         embeddings=openAIEmbeddings,
     ).split_documents(loaded_documents)
 
+    # Create the FAISS index.
     print("Creating new FAISS index and saving to:", FAISS_INDEX_PATH)
     vector_db = FAISS.from_documents(splitted_documents, openAIEmbeddings)
     vector_db.save_local(FAISS_INDEX_PATH)
