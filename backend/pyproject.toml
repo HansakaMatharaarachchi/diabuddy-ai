@@ -21,10 +21,13 @@ langchain = "^0.1.5"
 sentence-transformers = "^2.6.0"
 load-dotenv = "^0.1.0"
 pydantic = "1.10.13"
+ragas = "^0.1.5"
+langsmith = "^0.1.38"
 
 
 [tool.poetry.group.dev.dependencies]
 langchain-cli = ">=0.0.21"
+ipykernel = "^6.29.4"
 
 [build-system]
 requires = ["poetry-core"]
