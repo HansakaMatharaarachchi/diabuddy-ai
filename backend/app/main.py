@@ -1,34 +1,39 @@
 import os
 from operator import itemgetter
-from typing import Dict, TypedDict
+from typing import TypedDict
 
 from dotenv import load_dotenv
-from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_community.document_loaders import DirectoryLoader, UnstructuredPDFLoader
 from langchain_community.vectorstores.faiss import FAISS
-from langchain_core.messages import SystemMessage
-from langchain_core.prompts import MessagesPlaceholder, HumanMessagePromptTemplate, ChatPromptTemplate
-from langchain_core.runnables import RunnablePassthrough, RunnableParallel
-from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate
+from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from langchain_experimental.text_splitter import SemanticChunker
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_mongodb import MongoDBChatMessageHistory
+from langchain.prompts.prompt import PromptTemplate
+from langchain_core.runnables import RunnableParallel
+from langchain_core.messages import get_buffer_string
+from langchain_core.output_parsers import StrOutputParser
+from langchain_community.chat_models import ChatOllama
 
 # Load environment variables.
-load_dotenv()
+load_dotenv("../.env")
 
 # Define constants.
-DATA_PATH = "data"
-FAISS_INDEX_PATH = "vectorstores/faiss"
+DATA_PATH = "../data"
+FAISS_INDEX_PATH = "../vectorstores/faiss"
+
 # Define the embeddings.
-# TODO eval embeddings
-openAIEmbeddings = OpenAIEmbeddings()
+embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+
 # Load or create the FAISS index.
-# TODO eval indexes
-if len(os.listdir(FAISS_INDEX_PATH)):
+if os.path.exists(FAISS_INDEX_PATH):
     # Index file exists, load it
     print("Loading existing FAISS index from:", FAISS_INDEX_PATH)
-    vector_db = FAISS.load_local(FAISS_INDEX_PATH, openAIEmbeddings, allow_dangerous_deserialization=True)
+    vector_db = FAISS.load_local(
+        FAISS_INDEX_PATH, embeddings, allow_dangerous_deserialization=True
+    )
 else:
     # Index file doesn't exist, create a new one
     # Define the document loader.
@@ -43,18 +48,14 @@ else:
     # Load the documents.
     loaded_documents = documentLoader.load()
 
-    # Add metadata.
-    # for document in loaded_documents:
-    #     document.metadata['file_name'] = document.metadata['source']
-
     # Split the documents.
     splitted_documents = SemanticChunker(
-        embeddings=openAIEmbeddings,
+        embeddings=embeddings,
     ).split_documents(loaded_documents)
 
     # Create the FAISS index.
     print("Creating new FAISS index and saving to:", FAISS_INDEX_PATH)
-    vector_db = FAISS.from_documents(splitted_documents, openAIEmbeddings)
+    vector_db = FAISS.from_documents(splitted_documents, embeddings)
     vector_db.save_local(FAISS_INDEX_PATH)
 
 # Create a retriever.
@@ -73,65 +74,8 @@ class User:
 user = User("Hansaka", 23, "Male", "Type 1", "English")
 
 # Define the chat prompts.
-prompt = ChatPromptTemplate.from_messages(
-    [
-        SystemMessage(
-            content=(
-                """You are a helpful and informative medical assistant called DiaBuddy,
-              who specializes diabetes management. Your goal is to provide
-              accessible information and support for patients with diabetes while
-              prioritizing patient-centered care.
 
-              Provide clear, concise explanations of diabetes-related concepts.
-              Offer practical tips for managing their diabetes.
-              Use empathetic language that reassures the patient and acknowledges their experiences.
-              Avoid sounding overly clinical or robotic.
-              Refer users to consult a healthcare professional if a question
-              requires medical diagnosis, complex treatment recommendations, or
-              changes to an existing care plan.
-
-              Important: It's crucial to understand your capabilities and
-              limitations to avoid providing incorrect or potentially harmful advice.
-              """)
-        ),
-        HumanMessagePromptTemplate.from_template("{input}"),
-    ]
-)
-
-prompt_personalised = ChatPromptTemplate.from_messages(
-    [
-        SystemMessage(
-            content=(
-                f"""You are a helpful and informative medical assistant called DiaBuddy,
-                who specializes diabetes management. Your goal is to provide
-                accessible information and support for patients with diabetes while
-                prioritizing patient-centered care.
-
-                Patient Profile:
-                Name: {user.name}
-                Age: {user.age}
-                Gender: {user.gender}
-                Diabetes Type: {user.diabetes_type}
-                Preferred Language: {user.preferred_language}
-
-                Offer personalized conversation whenever possible, considering {user.name}'s background.
-                Provide clear, concise explanations of diabetes-related concepts.
-                Offer practical tips for managing their diabetes.
-                Use empathetic language that reassures {user.name} and acknowledges their experiences.
-                Avoid sounding overly clinical or robotic.
-                Refer {user.name} to consult a healthcare professional if a question
-                requires medical diagnosis, complex treatment recommendations, or
-                changes to an existing care plan.
-
-                Important: It's crucial to understand your capabilities and
-                limitations to avoid providing incorrect or potentially harmful advice.
-                """)
-        ),
-        HumanMessagePromptTemplate.from_template("{input}"),
-    ]
-)
-
-prompt_personalised_context = ChatPromptTemplate.from_messages(
+prompt_rag = ChatPromptTemplate.from_messages(
     [
         (
             "system",
@@ -140,7 +84,7 @@ prompt_personalised_context = ChatPromptTemplate.from_messages(
             accessible information and support for patients with diabetes while
             prioritizing patient-centered care.
 
-            Additional Knowledge: {{context}}
+            Answer only using this Knowledge: {{context}}
 
             Patient Profile:
             Name: {user.name}
@@ -160,133 +104,57 @@ prompt_personalised_context = ChatPromptTemplate.from_messages(
 
             Important: It's crucial to understand your capabilities and
             limitations to avoid providing incorrect or potentially harmful advice.
-            """
+            """,
         ),
         HumanMessagePromptTemplate.from_template("{input}"),
     ]
 )
 
-prompt_personalised_context_memory = ChatPromptTemplate.from_messages(
-    [
-        (
-            "system",
-            f"""You are a helpful and informative medical assistant called DiaBuddy,
-            who specializes diabetes management. Your goal is to provide
-            accessible information and support for patients with diabetes while
-            prioritizing patient-centered care.
-
-            Additional Knowledge: {{context}}
-
-            Patient Profile:
-            Name: {user.name}
-            Age: {user.age}
-            Gender: {user.gender}
-            Diabetes Type: {user.diabetes_type}
-            Preferred Language: {user.preferred_language}
-
-            Offer personalized conversation whenever possible, considering {user.name}'s background.
-            Provide clear, concise explanations of diabetes-related concepts.
-            Offer practical tips for managing their diabetes.
-            Use empathetic language that reassures {user.name} and acknowledges their experiences.
-            Avoid sounding overly clinical or robotic.
-            Refer {user.name} to consult a healthcare professional if a question
-            requires medical diagnosis, complex treatment recommendations, or
-            changes to an existing care plan.
-
-            Important: It's crucial to understand your capabilities and
-            limitations to avoid providing incorrect or potentially harmful advice.
-            """
-        ),
-        HumanMessagePromptTemplate.from_template("{input}"),
-    ]
-)
-
-message = "Can i eat some ice cream?"
 
 # Load the LLM
-llm = ChatOpenAI(streaming=True)
-
-# # Response without any modifications
-# llm.invoke(message)
-#
-# # Response with the guided prompt template
-# chain = prompt | llm | StrOutputParser()
-# chain.invoke({"input": message})
-#
-# # Response with the guided prompt template and user profile
-# chain = prompt_personalised | llm | StrOutputParser()
-# chain.invoke({"input": message})
-
-# Response with the guided prompt template, user profile and context memory
-# Create message history.# Create message history.
-chat_history = ChatMessageHistory()
-
-INITIAL_MESSAGE = "Hello, I'm DiaBuddy, your personal diabetes assistant. How can I help you today?"
-
-# Function to build the knowledge retrieval and processing chain.
-document_chain = create_stuff_documents_chain(llm, prompt_personalised_context_memory)
-
-
-# Helper function to extract the most recent user message for retrieval.
-def parse_retriever_input(params: Dict):
-    return params["messages"][-1].content
-
-
-# Chain for information retrieval - fetches relevant information based on user input.
-retrieval_chain = (
-        RunnablePassthrough.assign(
-            context=parse_retriever_input | retriever
-        )
-        | document_chain
-)
-
-
-# Main function to handle a single query/response cycle.
-def executeQuery(user_input, chat_history):
-    chat_history.add_user_message(user_input)
-
-    # Process the input through the retrieval chain.
-    response = retrieval_chain.invoke({
-        "messages": chat_history.messages
-    })
-
-    chat_history.add_ai_message(response)
-    return response
-
-
-if __name__ == "__main__":
-    # Conversation loop.
-    while True:
-        if len(chat_history.messages) == 0:
-            # Add initial message.
-            chat_history.add_ai_message(INITIAL_MESSAGE)
-            print("DiaBuddy: ", INITIAL_MESSAGE)
-
-        try:
-            user_input = input(f"{user.name} : ")
-            if user_input.lower() == 'exit':
-                break
-
-            chat_history.add_user_message(user_input)
-            response = executeQuery(user_input, chat_history)
-            chat_history.add_ai_message(response)
-            print("DiaBuddy: ", response)
-        except KeyboardInterrupt:
-            print("Goodbye!!!!")
-            break
+# llm = ChatGoogleGenerativeAI(model="gemini-pro", convert_system_message_to_human=True)
+llm = ChatOllama(model="gemma")
 
 
 class ChatInput(TypedDict):
     input: str
 
 
-# Chain for information retrieval - fetches relevant information based on user input.
-# TODO used for testing purposes
-chat_chain = (
-        RunnableParallel(
-            context=(itemgetter("input") | retriever), input=itemgetter("input")
-        )
-        | RunnableParallel(
-    input=(prompt_personalised_context | llm),
-    docs=itemgetter("context")
-)).with_types(input_type=ChatInput)
+_template = """Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original language.
+
+Chat History:
+{chat_history}
+Follow Up Input: {input}
+Standalone question:"""
+
+CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template(_template)
+
+standalone_question = RunnableParallel(
+    input=RunnableParallel(
+        input=RunnablePassthrough(),
+        chat_history=lambda x: get_buffer_string(x["chat_history"]),
+    )
+    | CONDENSE_QUESTION_PROMPT
+    | llm
+    | StrOutputParser(),
+)
+
+rag_chat_chain = (
+    RunnableParallel(
+        context=(itemgetter("input") | retriever), input=itemgetter("input")
+    )
+    | RunnableParallel(output=(prompt_rag | llm), docs=itemgetter("context"))
+).with_types(input_type=ChatInput)
+
+history_retriever = lambda session_id: MongoDBChatMessageHistory(
+    session_id=session_id,
+    connection_string="mongodb://mongo_user:password123@localhost:27017",
+)
+
+chat_with_history = RunnableWithMessageHistory(
+    runnable=standalone_question | rag_chat_chain,
+    input_messages_key="input",
+    output_messages_key="output",
+    history_messages_key="chat_history",
+    get_session_history=history_retriever,
+)
