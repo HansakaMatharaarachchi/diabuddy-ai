@@ -131,6 +131,41 @@ prompt_personalised = ChatPromptTemplate.from_messages(
     ]
 )
 
+prompt_personalised_context = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            f"""You are a helpful and informative medical assistant called DiaBuddy,
+            who specializes diabetes management. Your goal is to provide
+            accessible information and support for patients with diabetes while
+            prioritizing patient-centered care.
+
+            Additional Knowledge: {{context}}
+
+            Patient Profile:
+            Name: {user.name}
+            Age: {user.age}
+            Gender: {user.gender}
+            Diabetes Type: {user.diabetes_type}
+            Preferred Language: {user.preferred_language}
+
+            Offer personalized conversation whenever possible, considering {user.name}'s background.
+            Provide clear, concise explanations of diabetes-related concepts.
+            Offer practical tips for managing their diabetes.
+            Use empathetic language that reassures {user.name} and acknowledges their experiences.
+            Avoid sounding overly clinical or robotic.
+            Refer {user.name} to consult a healthcare professional if a question
+            requires medical diagnosis, complex treatment recommendations, or
+            changes to an existing care plan.
+
+            Important: It's crucial to understand your capabilities and
+            limitations to avoid providing incorrect or potentially harmful advice.
+            """
+        ),
+        HumanMessagePromptTemplate.from_template("{input}"),
+    ]
+)
+
 prompt_personalised_context_memory = ChatPromptTemplate.from_messages(
     [
         (
@@ -162,7 +197,7 @@ prompt_personalised_context_memory = ChatPromptTemplate.from_messages(
             limitations to avoid providing incorrect or potentially harmful advice.
             """
         ),
-        MessagesPlaceholder(variable_name="messages")
+        HumanMessagePromptTemplate.from_template("{input}"),
     ]
 )
 
@@ -183,7 +218,7 @@ llm = ChatOpenAI(streaming=True)
 # chain.invoke({"input": message})
 
 # Response with the guided prompt template, user profile and context memory
-# Create message history.
+# Create message history.# Create message history.
 chat_history = ChatMessageHistory()
 
 INITIAL_MESSAGE = "Hello, I'm DiaBuddy, your personal diabetes assistant. How can I help you today?"
@@ -194,37 +229,24 @@ document_chain = create_stuff_documents_chain(llm, prompt_personalised_context_m
 
 # Helper function to extract the most recent user message for retrieval.
 def parse_retriever_input(params: Dict):
-    print(params)
-    return params["input"]
-    # return params["messages"][-1].content
-
-
-class ChatInput(TypedDict):
-    question: str
+    return params["messages"][-1].content
 
 
 # Chain for information retrieval - fetches relevant information based on user input.
-chat_chain = (
+retrieval_chain = (
         RunnablePassthrough.assign(
             context=parse_retriever_input | retriever
         )
         | document_chain
 )
 
-chain_with_message_history = RunnableWithMessageHistory(
-    chat_chain,
-    lambda session_id: chat_history,
-    input_messages_key="input",
-    history_messages_key="messages",
-)
-
 
 # Main function to handle a single query/response cycle.
-def execute_query(user_input, chat_history):
+def executeQuery(user_input, chat_history):
     chat_history.add_user_message(user_input)
 
     # Process the input through the retrieval chain.
-    response = chat_chain.invoke({
+    response = retrieval_chain.invoke({
         "messages": chat_history.messages
     })
 
@@ -238,16 +260,33 @@ if __name__ == "__main__":
         if len(chat_history.messages) == 0:
             # Add initial message.
             chat_history.add_ai_message(INITIAL_MESSAGE)
-            print(INITIAL_MESSAGE)
+            print("DiaBuddy: ", INITIAL_MESSAGE)
 
-        user_input = input(f"{user.name} : ")
-        if user_input.lower() == 'exit':
+        try:
+            user_input = input(f"{user.name} : ")
+            if user_input.lower() == 'exit':
+                break
+
+            chat_history.add_user_message(user_input)
+            response = executeQuery(user_input, chat_history)
+            chat_history.add_ai_message(response)
+            print("DiaBuddy: ", response)
+        except KeyboardInterrupt:
+            print("Goodbye!!!!")
             break
 
-        # response = execute_query(user_input, chat_history)
-        response = chain_with_message_history.invoke(
-            {"input": user_input},
-            {"configurable": {"session_id": "unused"}},
-        )
 
-        print("DiaBuddy: ", response)
+class ChatInput(TypedDict):
+    input: str
+
+
+# Chain for information retrieval - fetches relevant information based on user input.
+# TODO used for testing purposes
+chat_chain = (
+        RunnableParallel(
+            context=(itemgetter("input") | retriever), input=itemgetter("input")
+        )
+        | RunnableParallel(
+    input=(prompt_personalised_context | llm),
+    docs=itemgetter("context")
+)).with_types(input_type=ChatInput)
