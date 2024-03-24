@@ -193,6 +193,5 @@ pyrightconfig.json
 pyvenv.cfg
 pip-selfcheck.json
 
-## models and data
-models/
+## data
 data/
