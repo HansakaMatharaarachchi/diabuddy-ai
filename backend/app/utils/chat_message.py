@@ -1,14 +1,14 @@
 from typing import List
 
 from app.models.chat import ChatMessage
-from app.services.chat_history_service import ChatHistoryService
+from app.services.chat_service import ChatService
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.messages import BaseMessage
 
 
 class MongoDBUserChatMessageHistory(BaseChatMessageHistory):
 
-    def __init__(self, user_id: str, chat_history_service: ChatHistoryService):
+    def __init__(self, user_id: str, chat_service: ChatService):
         """Initialize the MongoDBUserChatMessageHistory.
 
         Args:
@@ -16,7 +16,7 @@ class MongoDBUserChatMessageHistory(BaseChatMessageHistory):
             chat_history_service (ChatHistoryService): Chat history service.
         """
         self.user_id = user_id
-        self.chat_history_service = chat_history_service
+        self.chat_service = chat_service
 
     @property
     def messages(self) -> List[BaseMessage]:
@@ -25,7 +25,7 @@ class MongoDBUserChatMessageHistory(BaseChatMessageHistory):
         Returns:
             List[BaseMessage]: List of messages.
         """
-        return self.chat_history_service.get_message_history(self.user_id)
+        return self.chat_service.get_messages(self.user_id)
 
     def add_message(self, message: BaseMessage) -> None:
         """Add a message.
@@ -33,13 +33,13 @@ class MongoDBUserChatMessageHistory(BaseChatMessageHistory):
         Args:
             message (BaseMessage): Message to add.
         """
-        self.chat_history_service.add_message(
+        self.chat_service.add_message(
             self.user_id, base_message_to_chat_message(message)
         )
 
     def clear(self) -> None:
         """Clear the messages."""
-        self.chat_history_service.clear_message_history(self.user_id)
+        self.chat_service.clear_messages(self.user_id)
 
 
 def base_message_to_chat_message(base_message: BaseMessage) -> ChatMessage:

@@ -9,9 +9,9 @@ from langchain_core.messages.base import message_to_dict
 logger = logging.getLogger(__name__)
 
 
-class ChatHistoryService:
+class ChatService:
     def __init__(self, db: MongoDB):
-        """Initialize ChatHistoryService.
+        """Initialize chat service.
 
         Args:
             db (MongoDB): MongoDB instance.
@@ -39,7 +39,7 @@ class ChatHistoryService:
             logger.error(f"Error adding chat message: {e}")
             return False
 
-    def get_message_history(self, user_id: str) -> List[ChatMessage]:
+    def get_messages(self, user_id: str) -> List[ChatMessage]:
         """Get chat message history of the user.
 
         Args:
@@ -55,7 +55,7 @@ class ChatHistoryService:
             logger.error(f"Error getting chat message history: {e}")
             return []
 
-    def clear_message_history(self, user_id: str) -> bool:
+    def clear_messages(self, user_id: str) -> bool:
         """Clear chat message history of the user.
 
         Args:

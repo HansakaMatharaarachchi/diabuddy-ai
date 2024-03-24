@@ -2,7 +2,7 @@ import os
 from operator import itemgetter
 from typing import TypedDict
 
-from app.dependencies.database import get_mongo
+from app.dependencies.database import get_db
 from app.utils.chat_message import MongoDBUserChatMessageHistory
 from dotenv import load_dotenv
 from langchain.prompts.prompt import PromptTemplate
@@ -16,6 +16,7 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.runnables.utils import ConfigurableFieldSpec
 from langchain_experimental.text_splitter import SemanticChunker
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+
 
 # Load environment variables.
 load_dotenv("../.env")
@@ -147,10 +148,10 @@ rag_chat_chain = (
 ).with_types(input_type=ChatInput)
 
 history_retriever = lambda user_id: MongoDBUserChatMessageHistory(
-    user_id=user_id, chat_history_service=get_mongo()
+    user_id=user_id, chat_service=get_db()
 )
 
-chat_with_history = RunnableWithMessageHistory(
+chat_chain = RunnableWithMessageHistory(
     runnable=standalone_question | rag_chat_chain,
     input_messages_key="input",
     output_messages_key="output",

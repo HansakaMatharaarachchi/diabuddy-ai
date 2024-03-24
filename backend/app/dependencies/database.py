@@ -1,9 +1,6 @@
 import os
 
 from app.db.mongodb import MongoDB
-from dotenv import load_dotenv
-
-load_dotenv("../.env")
 
 # Initialize MongoDB connection
 mongo_instance = MongoDB(
@@ -11,8 +8,7 @@ mongo_instance = MongoDB(
 )
 
 
-# Dependency function to get MongoDB instance
-def get_mongo():
+def get_db():
     """Get MongoDB instance.
 
     Returns:
