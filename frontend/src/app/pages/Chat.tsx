@@ -1,10 +1,6 @@
-import AppLayout from "../components/common/AppLayout";
-import ChatContainer from "../containers/Chat";
+import { ChatContainer } from "../containers";
+import { withLayout } from "../layouts";
 
-const Chat = () => (
-  <AppLayout>
-    <ChatContainer />
-  </AppLayout>
-);
+const Chat = () => <ChatContainer />;
 
-export default Chat;
+export default withLayout(Chat);
