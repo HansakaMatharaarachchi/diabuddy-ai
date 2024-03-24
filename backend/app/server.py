@@ -1,10 +1,16 @@
-from fastapi import FastAPI
+from app.dependencies.auth import VerifyToken
+from dotenv import load_dotenv
+from fastapi import Depends, FastAPI, Security
 from fastapi.responses import RedirectResponse
 from langserve import add_routes
 
-from app.main import chat_chain
+load_dotenv()
 
-app = FastAPI()
+auth = VerifyToken()
+
+app = FastAPI(
+    dependencies=[Depends(Security(auth.verify))],
+)
 
 
 @app.get("/")

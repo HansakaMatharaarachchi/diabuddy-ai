@@ -2,20 +2,19 @@ import os
 from operator import itemgetter
 from typing import TypedDict
 
+from app.utils.chat_message import MongoDBUserChatMessageHistory
 from dotenv import load_dotenv
+from langchain.prompts.prompt import PromptTemplate
 from langchain_community.document_loaders import DirectoryLoader, UnstructuredPDFLoader
 from langchain_community.vectorstores.faiss import FAISS
-from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate
-from langchain_core.runnables import RunnableParallel, RunnablePassthrough
-from langchain_experimental.text_splitter import SemanticChunker
-from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
-from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_mongodb import MongoDBChatMessageHistory
-from langchain.prompts.prompt import PromptTemplate
-from langchain_core.runnables import RunnableParallel
 from langchain_core.messages import get_buffer_string
 from langchain_core.output_parsers import StrOutputParser
-from langchain_community.chat_models import ChatOllama
+from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate
+from langchain_core.runnables import RunnableParallel, RunnablePassthrough
+from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_core.runnables.utils import ConfigurableFieldSpec
+from langchain_experimental.text_splitter import SemanticChunker
+from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 
 # Load environment variables.
 load_dotenv("../.env")
@@ -112,8 +111,8 @@ prompt_rag = ChatPromptTemplate.from_messages(
 
 
 # Load the LLM
-# llm = ChatGoogleGenerativeAI(model="gemini-pro", convert_system_message_to_human=True)
-llm = ChatOllama(model="gemma")
+llm = ChatGoogleGenerativeAI(model="gemini-pro", convert_system_message_to_human=True)
+llm.invoke("Hello")
 
 
 class ChatInput(TypedDict):
@@ -146,9 +145,10 @@ rag_chat_chain = (
     | RunnableParallel(output=(prompt_rag | llm), docs=itemgetter("context"))
 ).with_types(input_type=ChatInput)
 
-history_retriever = lambda session_id: MongoDBChatMessageHistory(
-    session_id=session_id,
-    connection_string="mongodb://mongo_user:password123@localhost:27017",
+history_retriever = lambda user_id: MongoDBUserChatMessageHistory(
+    user_id=user_id,
+    connection_string=os.getenv("MONGODB_URI"),
+    database_name=os.getenv("MONGODB_DBNAME"),
 )
 
 chat_with_history = RunnableWithMessageHistory(
@@ -157,4 +157,12 @@ chat_with_history = RunnableWithMessageHistory(
     output_messages_key="output",
     history_messages_key="chat_history",
     get_session_history=history_retriever,
+    history_factory_config=[
+        ConfigurableFieldSpec(
+            id="user_id",
+            annotation=str,
+            name="User ID",
+            description="Unique identifier of the user.",
+        )
+    ],
 )
