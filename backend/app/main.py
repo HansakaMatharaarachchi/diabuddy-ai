@@ -2,6 +2,7 @@ import os
 from operator import itemgetter
 from typing import TypedDict
 
+from app.dependencies.database import get_mongo_db
 from app.utils.chat_message import MongoDBUserChatMessageHistory
 from dotenv import load_dotenv
 from langchain.prompts.prompt import PromptTemplate
@@ -146,9 +147,7 @@ rag_chat_chain = (
 ).with_types(input_type=ChatInput)
 
 history_retriever = lambda user_id: MongoDBUserChatMessageHistory(
-    user_id=user_id,
-    connection_string=os.getenv("MONGODB_URI"),
-    database_name=os.getenv("MONGODB_DBNAME"),
+    user_id=user_id, db=get_mongo_db()
 )
 
 chat_with_history = RunnableWithMessageHistory(
