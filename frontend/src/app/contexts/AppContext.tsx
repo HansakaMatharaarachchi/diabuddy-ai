@@ -1,7 +1,7 @@
 import { useAuth0 } from "@auth0/auth0-react";
 import { createContext, useContext, useEffect } from "react";
 import { Outlet } from "react-router-dom";
-import { addAccessTokenInterceptor } from "../utils/axios";
+import { addAccessTokenInterceptor } from "../utils/axiosClient";
 
 const AppContext = createContext({});
 
