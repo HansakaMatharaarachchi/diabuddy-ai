@@ -39,7 +39,13 @@ const GetStarted = () => {
 						<span className="text-4xl font-bold">Get started</span>
 						<div className="flex gap-2.5 *:flex *:gap-3 *:px-4 *:py-5 *:text-white *:transition-colors *:border *:rounded-xl *:border-black/20 *:bg-primary *:shadow">
 							<button
-								onClick={() => loginWithRedirect()}
+								onClick={() =>
+									loginWithRedirect({
+										appState: {
+											returnTo: "/chat",
+										},
+									})
+								}
 								className="hover:ring-4 hover:ring-primary/30"
 							>
 								<EnterSVG className="size-6" />
@@ -48,6 +54,9 @@ const GetStarted = () => {
 							<button
 								onClick={() =>
 									loginWithRedirect({
+										appState: {
+											returnTo: "/chat",
+										},
 										authorizationParams: {
 											screen_hint: "signup",
 										},
