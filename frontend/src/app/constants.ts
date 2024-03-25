@@ -1,3 +1,5 @@
+export const USER_API_URL = `${process.env.REACT_APP_API_SERVER_URL}/user`;
+
 export enum Gender {
 	MALE = "Male",
 	FEMALE = "Female",

@@ -1,17 +1,17 @@
 import { useAuth0 } from "@auth0/auth0-react";
 import { createContext, useContext, useEffect } from "react";
 import { Outlet } from "react-router-dom";
+import { addAccessTokenInterceptor } from "../utils/axios";
 
 const AppContext = createContext({});
 
 export const AppContextProvider = () => {
-	const { isAuthenticated, user } = useAuth0();
+	const { getAccessTokenSilently } = useAuth0();
 
+	// Set Auth0 access token to axios instance.
 	useEffect(() => {
-		if (isAuthenticated && user) {
-			console.log(user);
-		}
-	}, [isAuthenticated, user]);
+		addAccessTokenInterceptor(getAccessTokenSilently);
+	}, [getAccessTokenSilently]);
 
 	return (
 		<AppContext.Provider value={{}}>
