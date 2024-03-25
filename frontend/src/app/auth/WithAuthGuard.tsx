@@ -5,7 +5,7 @@ const withAuthGuard = (component: any) => {
 	const guardedComponent = withAuthenticationRequired(component, {
 		onRedirecting: () => (
 			<div className="flex items-center justify-center w-full h-svh">
-				<Loader size={64} />
+				<Loader />
 			</div>
 		),
 	});
