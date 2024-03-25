@@ -1,27 +1,30 @@
 from enum import Enum
+from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class Gender(str, Enum):
-    MALE = "Male"
-    FEMALE = "Female"
+    MALE = "male"
+    FEMALE = "female"
 
 
 class DiabetesType(str, Enum):
-    TYPE_1 = "Type 1"
-    TYPE_2 = "Type 2"
+    TYPE_1 = "type 1"
+    TYPE_2 = "type 2"
 
 
 class Language(str, Enum):
-    ENGLISH = "en"
+    ENGLISH = "english"
 
 
-class User(BaseModel):
-    _id: str = Field(alias="id")
-    sub: str  # Auth0 user ID
+class UserProfileBase(BaseModel):
     nickname: str
-    age: int = Field(..., gt=18)
+    age: int
     gender: Gender
     diabetes_type: DiabetesType
     preferred_language: Language
+
+
+class UserProfile(UserProfileBase):
+    id: str

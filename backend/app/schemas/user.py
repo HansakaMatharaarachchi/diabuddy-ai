@@ -1,6 +1,5 @@
-from typing import Optional
-from app.models.user import User
+from app.models.user import UserProfileBase
 
 
-class UserCreate(User):
-    _id: Optional[str]
+class UpdateUserProfile(UserProfileBase):
+    pass

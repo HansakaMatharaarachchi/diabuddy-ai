@@ -1,9 +1,21 @@
-import os
-from typing import Optional
+from dataclasses import dataclass
+from typing import List, Optional
 
 import jwt
+from auth0.authentication import GetToken
+from auth0.management import Auth0
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, SecurityScopes
+
+
+@dataclass
+class Auth0ClientConfig:
+    auth0_domain: str
+    auth0_api_audience: str
+    auth0_issuer: str
+    auth0_algorithms: List[str]
+    client_id: str
+    client_secret: str
 
 
 class UnauthorizedException(HTTPException):
@@ -22,12 +34,18 @@ class UnauthenticatedException(HTTPException):
 class VerifyToken:
     """Does all the token verification using PyJWT"""
 
-    def __init__(self):
+    def __init__(
+        self,
+        auth0_domain: str,
+        auth0_api_audience: str,
+        auth0_issuer: str,
+        auth0_algorithms: list[str],
+    ):
         self.config = {
-            "auth0_domain": os.getenv("AUTH0_DOMAIN", "your.domain.com"),
-            "auth0_api_audience": os.getenv("AUTH0_API_AUDIENCE", "your.audience.com"),
-            "auth0_issuer": os.getenv("AUTH0_ISSUER", "https://your.domain.com/"),
-            "auth0_algorithms": os.getenv("AUTH0_ALGORITHMS", "RS256"),
+            "auth0_domain": auth0_domain,
+            "auth0_api_audience": auth0_api_audience,
+            "auth0_issuer": auth0_issuer,
+            "auth0_algorithms": auth0_algorithms,
         }
 
         # This gets the JWKS from a given URL and does processing so you can
@@ -39,7 +57,7 @@ class VerifyToken:
         self,
         security_scopes: SecurityScopes,
         token: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer()),
-    ):
+    ) -> str:
         if token is None:
             raise UnauthenticatedException
 
@@ -67,7 +85,7 @@ class VerifyToken:
         if len(security_scopes.scopes) > 0:
             self._check_claims(payload, "scope", security_scopes.scopes)
 
-        return payload
+        return payload["sub"]
 
     def _check_claims(self, payload, claim_name, expected_value):
         if claim_name not in payload:
@@ -83,3 +101,34 @@ class VerifyToken:
         for value in expected_value:
             if value not in payload_claim:
                 raise UnauthorizedException(detail=f'Missing "{claim_name}" scope')
+
+
+class Auth0Client:
+
+    def __init__(self, config: Auth0ClientConfig):
+        self.config = config
+        self.client_id = self.config.client_id
+        self.client_secret = self.config.client_secret
+        self.get_token = GetToken(
+            self.config.auth0_domain, self.client_id, client_secret=self.client_secret
+        )
+        self.mgmt_api_token = self.get_management_token()
+        self.auth0 = Auth0(self.config.auth0_domain, self.mgmt_api_token)
+        self.verify_token = VerifyToken(
+            self.config.auth0_domain,
+            self.config.auth0_api_audience,
+            self.config.auth0_issuer,
+            self.config.auth0_algorithms,
+        )
+
+    def get_management_token(self):
+        token = self.get_token.client_credentials(
+            f"https://{self.config.auth0_domain}/api/v2/"
+        )
+        return token["access_token"]
+
+    def get_token_verifier(self):
+        return self.verify_token
+
+    def get_user_manager(self):
+        return self.auth0.users
