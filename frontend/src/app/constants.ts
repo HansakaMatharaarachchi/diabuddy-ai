@@ -1,4 +1,4 @@
-export const USER_API_URL = `${process.env.REACT_APP_API_SERVER_URL}/user`;
+export const USER_API_URL = `${process.env.REACT_APP_API_SERVER_URL}/users`;
 
 export enum Gender {
 	MALE = "Male",
@@ -11,5 +11,5 @@ export enum DiabetesType {
 }
 
 export enum Language {
-	ENGLISH = "english",
+	ENGLISH = "English",
 }

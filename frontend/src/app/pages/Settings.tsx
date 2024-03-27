@@ -1,7 +1,13 @@
-import { withLayout } from "../layouts";
+import { SettingsContainer } from "../containers";
+import { Header, withLayout } from "../layouts";
 
 const Settings = () => {
-	return <div>Settings</div>;
+	return (
+		<>
+			<Header title="Settings" />
+			<SettingsContainer />
+		</>
+	);
 };
 
 export default withLayout(Settings);

@@ -15,12 +15,12 @@ const GetStarted = () => {
 						alt="logo"
 					/>
 
-					<div className="flex flex-col sm:justify-between flex-1 gap-4 sm:gap-2.5 *:flex *:flex-col *:gap-2  ">
-						<div className="text-4xl font-bold ">
+					<div className="flex flex-col sm:justify-between flex-1 gap-4 sm:gap-2.5 *:flex *:flex-col *:gap-2">
+						<div className="text-3xl font-bold">
 							<span>Welcome</span>
 							<span>to DiaBuddy 👋</span>
 						</div>
-						<span className="text-2xl font-bold opacity-90 sm:text-3xl">
+						<span className="text-lg font-bold opacity-90 sm:text-2xl">
 							Take control of your diabetes. Get the support you need.
 						</span>
 					</div>
@@ -28,15 +28,15 @@ const GetStarted = () => {
 			</aside>
 			<div className="flex flex-col items-center flex-1 w-full p-6 sm:items-end gap-y-8">
 				<main className="flex flex-col justify-center flex-1 w-full h-full gap-10">
-					<div className="hidden sm:flex flex-col text-3xl max-w-[985px] font-semibold">
+					<div className="hidden sm:flex flex-col  max-w-[985px] font-semibold text-4xl">
 						<span>DiaBuddy is always ready to listen.</span>
-						<span>
+						<span className="text-2xl">
 							Get answers, find support, and learn about managing your condition
 							with ease.
 						</span>
 					</div>
 					<div className="flex flex-col items-center justify-center gap-2.5">
-						<span className="text-4xl font-bold">Get started</span>
+						<span className="text-3xl font-extrabold">Get started</span>
 						<div className="flex gap-2.5 *:flex *:gap-3 *:px-4 *:py-5 *:text-white *:transition-colors *:border *:rounded-xl *:border-black/20 *:bg-primary *:shadow">
 							<button
 								onClick={() =>

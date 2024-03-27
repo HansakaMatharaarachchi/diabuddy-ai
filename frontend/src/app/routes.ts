@@ -3,6 +3,7 @@ import { RouteObject } from "react-router-dom";
 import { Auth0ProviderWithNavigate, withAuthGuard } from "./auth";
 import { Chat, GetStarted, NotFound, Settings } from "./pages";
 import { AppContextProvider } from "./contexts";
+import SetupProfile from "./pages/SetupProfile";
 
 export const routes: RouteObject[] = [
 	{
@@ -14,6 +15,10 @@ export const routes: RouteObject[] = [
 					{
 						path: "/",
 						Component: GetStarted,
+					},
+					{
+						path: "/setup-profile",
+						Component: withAuthGuard(SetupProfile),
 					},
 					{
 						path: "/chat",
