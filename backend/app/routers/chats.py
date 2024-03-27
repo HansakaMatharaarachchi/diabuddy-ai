@@ -20,10 +20,8 @@ async def get_chat_history_for_authenticated_user(
     """
     try:
         return await chat_service.get_messages(authenticated_user_id) or []
-    except HTTPException as http_exc:
-        raise http_exc
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="Failed to fetch chat history.")
 
 
 @router.delete("/me/chat", response_model=bool)
@@ -39,7 +37,5 @@ async def delete_chat_history_of_authenticated_user(
     try:
         await chat_service.delete_messages(authenticated_user_id)
         return True
-    except HTTPException as http_exc:
-        raise http_exc
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="Failed to delete chat history.")

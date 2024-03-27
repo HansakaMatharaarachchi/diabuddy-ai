@@ -60,7 +60,5 @@ async def delete_authenticated_user(
     try:
         await user_service.delete_user(authenticated_user_id)
         return True
-    except HTTPException as http_exc:
-        raise http_exc
     except Exception:
         raise HTTPException(status_code=500, detail="Error deleting user")
