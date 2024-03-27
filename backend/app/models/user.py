@@ -1,30 +1,39 @@
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, root_validator
 
 
 class Gender(str, Enum):
-    MALE = "male"
-    FEMALE = "female"
+    MALE = "Male"
+    FEMALE = "Female"
 
 
 class DiabetesType(str, Enum):
-    TYPE_1 = "type 1"
-    TYPE_2 = "type 2"
+    TYPE_1 = "Type 1"
+    TYPE_2 = "Type 2"
 
 
 class Language(str, Enum):
-    ENGLISH = "english"
+    ENGLISH = "English"
 
 
-class UserProfileBase(BaseModel):
-    nickname: str
-    age: int
-    gender: Gender
-    diabetes_type: DiabetesType
-    preferred_language: Language
+class UserBase(BaseModel):
+    nickname: Optional[str]
+    age: Optional[int] = Field(None, ge=18, le=100)
+    gender: Optional[Gender]
+    diabetes_type: Optional[DiabetesType]
+    preferred_language: Optional[Language]
 
 
-class UserProfile(UserProfileBase):
+class User(UserBase):
     id: str
+    is_profile_completed: bool = False
+
+    @root_validator
+    def calculate_profile_completed(cls, values):
+        # Check if all fields are not None.
+        is_profile_completed = all(
+            values.get(field) is not None for field in cls.__fields__.keys()
+        )
+        return {**values, "is_profile_completed": is_profile_completed}

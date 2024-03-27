@@ -1,7 +1,7 @@
 from typing import List
 
 from app.models.chat import ChatMessage
-from app.services.chat_service import ChatService
+from app.services.chat import ChatService
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.messages import BaseMessage
 
@@ -39,7 +39,7 @@ class MongoDBUserChatMessageHistory(BaseChatMessageHistory):
 
     def clear(self) -> None:
         """Clear the messages."""
-        self.chat_service.clear_messages(self.user_id)
+        self.chat_service.delete_messages(self.user_id)
 
 
 def base_message_to_chat_message(base_message: BaseMessage) -> ChatMessage:

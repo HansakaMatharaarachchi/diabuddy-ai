@@ -1,5 +1,5 @@
-from app.models.user import UserProfileBase
+from app.models.user import UserBase
 
 
-class UpdateUserProfile(UserProfileBase):
+class UpdateUser(UserBase):
     pass

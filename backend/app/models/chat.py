@@ -11,6 +11,9 @@ class ChatMessage(BaseMessage):
         BaseMessage (_type_): Base message class.
     """
 
+    message_id: str
+    timestamp: datetime
+
     def __init__(self, content, **kwargs):
         super().__init__(content, **kwargs)
 

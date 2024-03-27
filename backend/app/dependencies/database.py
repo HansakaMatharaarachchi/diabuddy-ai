@@ -1,17 +1,21 @@
 import os
+from functools import lru_cache
 
-from app.db.mongodb import MongoDB
-
-# Initialize MongoDB connection
-mongo_instance = MongoDB(
-    uri=os.getenv("MONGODB_URI"), db_name=os.getenv("MONGODB_DBNAME")
-)
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
 
-def get_db():
-    """Get MongoDB instance.
-
-    Returns:
-        _type_: MongoDB instance.
+@lru_cache()  # Caches the result of the function to prevent redundant connections.
+def get_mongo_client() -> AsyncIOMotorClient:
     """
-    return mongo_instance
+    Returns an AsyncIOMotorClient instance.
+    The function is cached using lru_cache to prevent redundant connections.
+    """
+    return AsyncIOMotorClient(os.getenv("MONGODB_URI"))
+
+
+async def get_database() -> AsyncIOMotorDatabase:
+    """
+    Returns the AsyncIOMotorDatabase object from the MongoDB client.
+    """
+    client = get_mongo_client()
+    return client[os.getenv("MONGO_DB_NAME")]
