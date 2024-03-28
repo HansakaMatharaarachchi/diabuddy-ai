@@ -1,24 +1,60 @@
-import React from "react";
+import { useAuth0 } from "@auth0/auth0-react";
+import { animated, config, useSpring } from "@react-spring/web";
+import { ComponentType, ReactNode } from "react";
+import { ReactComponent as MobileMenuIcon } from "../../assets/svg/menu.svg";
+import { useAppContext } from "../contexts";
+import useIsOnMobile from "../hooks/useIsOnMobile";
 import NavBar from "./NavBar";
 
 type Props = {
-	children?: React.ReactNode;
+	children?: ReactNode;
 };
 
 const AppLayout = ({ children }: Props) => {
+	const { isNavBarOpen, setIsNavBarOpen } = useAppContext();
+
+	const isOnMobile = useIsOnMobile();
+	const { logout } = useAuth0();
+
+	const asideAnimation = useSpring({
+		transform: isNavBarOpen ? "translateX(0%)" : "translateX(-100%)",
+		config: config.stiff,
+	});
+
 	return (
-		<div className="flex w-full h-dvh">
-			<aside className="flex w-4/5 min-h-screen border border-r shadow-2xl sm:w-2/5 md:w-1/3 xl:w-1/5 sm:shadow-none rounded-2xl">
-				<NavBar />
-			</aside>
+		<div className="relative flex w-full h-dvh">
+			<animated.aside
+				className="absolute z-50 flex w-full h-full border border-r md:relative rounded-2xl backdrop-blur-sm md:backdrop-blur-0 md:w-3/5 lg:w-2/5 xl:w-2/5 2xl:w-1/5"
+				style={isOnMobile ? asideAnimation : undefined}
+			>
+				<div className="flex flex-col w-4/5 bg-white shadow-2xl md:shadow-none md:w-full sm:w-2/4">
+					<button hidden={!isOnMobile} className="self-end">
+						<MobileMenuIcon
+							title="Open menu"
+							className="w-8 h-8 m-4 text-primary"
+							onClick={() => {
+								setIsNavBarOpen?.((prevValue) => !prevValue);
+							}}
+						/>
+					</button>
+					<NavBar
+						logout={() =>
+							logout({
+								logoutParams: {
+									returnTo: window.location.origin,
+								},
+							})
+						}
+						onNavLinkClick={() => setIsNavBarOpen?.(false)}
+					/>
+				</div>
+			</animated.aside>
 			<div className="flex flex-col w-full">{children}</div>
 		</div>
 	);
 };
 
-const withLayout = <P extends object>(
-	WrappedComponent: React.ComponentType<P>
-) => {
+const withLayout = <P extends object>(WrappedComponent: ComponentType<P>) => {
 	return (props: P) => {
 		return (
 			<AppLayout>

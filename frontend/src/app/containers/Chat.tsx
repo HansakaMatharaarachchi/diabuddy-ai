@@ -1,5 +1,4 @@
 import Swal from "sweetalert2";
-import logo from "../../assets/images/logo.png";
 import { ReactComponent as ClearIcon } from "../../assets/svg/clear.svg";
 import { ReactComponent as RefreshIcon } from "../../assets/svg/refresh.svg";
 import { Conversation, Input, Loader } from "../components";

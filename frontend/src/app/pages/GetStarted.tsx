@@ -8,7 +8,7 @@ const GetStarted = () => {
 	return (
 		<div className="flex flex-col sm:flex-row w-full min-h-dvh text-primary bg-[url('/src/assets/svg/animated-bg.svg')] bg-no-repeat bg-cover">
 			<aside className="flex w-full border-r sm:min-h-screen sm:border sm:bg-white sm:w-2/5 md:w-1/3 xl:w-1/4 2xl:w-1/5 rounded-2xl">
-				<nav className="flex flex-col gap-2.5 p-6 ">
+				<div className="flex flex-col gap-2.5 p-6 w-full">
 					<img
 						src={logo}
 						className="place-self-center size-56 sm:size-auto"
@@ -24,7 +24,7 @@ const GetStarted = () => {
 							Take control of your diabetes. Get the support you need.
 						</span>
 					</div>
-				</nav>
+				</div>
 			</aside>
 			<div className="flex flex-col items-center flex-1 w-full p-6 sm:items-end gap-y-8">
 				<main className="flex flex-col justify-center flex-1 w-full h-full gap-10">

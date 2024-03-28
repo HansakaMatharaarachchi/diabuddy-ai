@@ -1,4 +1,3 @@
-import { useAuth0 } from "@auth0/auth0-react";
 import { NavLink } from "react-router-dom";
 import logo from "../../assets/images/logo.png";
 import { ReactComponent as ChatSvg } from "../../assets/svg/chat.svg";
@@ -24,11 +23,13 @@ const NavItem = ({ Icon, text, isActive, onClick }: NavItemProps) => (
 	</button>
 );
 
-const NavBar = () => {
-	const { logout } = useAuth0();
-
+interface NavBarProps {
+	onNavLinkClick?: () => void;
+	logout?: () => void;
+}
+const NavBar = ({ onNavLinkClick, logout }: NavBarProps) => {
 	return (
-		<nav className="flex flex-col gap-2.5 p-4 ">
+		<nav className="flex flex-col gap-2.5 p-4 flex-1">
 			<img src={logo} alt="logo" />
 
 			<div className="flex flex-col justify-between flex-1 gap-2.5 text-xl font-bold *:flex *:flex-col *:gap-2">
@@ -40,6 +41,7 @@ const NavBar = () => {
 								text="Chat"
 								isActive={isActive}
 								aria-label="Chat Navigation"
+								onClick={onNavLinkClick}
 							/>
 						)}
 					</NavLink>
@@ -53,6 +55,7 @@ const NavBar = () => {
 								text="Settings"
 								isActive={isActive}
 								aria-label="Settings Navigation"
+								onClick={onNavLinkClick}
 							/>
 						)}
 					</NavLink>
@@ -60,13 +63,10 @@ const NavBar = () => {
 						Icon={ExitSvg}
 						text="Log Out"
 						aria-label="Log Out Navigation"
-						onClick={() =>
-							logout({
-								logoutParams: {
-									returnTo: window.location.origin,
-								},
-							})
-						}
+						onClick={() => {
+							onNavLinkClick?.();
+							logout?.();
+						}}
 					/>
 				</div>
 			</div>

@@ -4,7 +4,6 @@ const ErrorPage = () => {
 	return (
 		<div className="flex flex-col items-center justify-center w-full h-screen space-x-8 space-y-16 lg:flex-row lg:space-y-0 2xl:space-x-0">
 			<div className="flex flex-col items-center justify-center w-full text-center lg:w-1/2 lg:px-2 xl:px-0">
-				ErrorContainer
 				<p className="font-bold tracking-wider text-primary/80 text-7xl md:text-8xl lg:text-9xl">
 					500
 				</p>

@@ -1,19 +1,34 @@
-import React, { useEffect } from "react";
+import { ReactNode, useEffect } from "react";
+import { ReactComponent as MobileMenuIcon } from "../../assets/svg/menu.svg";
+import { useAppContext } from "../contexts";
+import useIsOnMobile from "../hooks/useIsOnMobile";
 
 type Props = {
 	title: string;
-	options?: React.ReactNode;
+	options?: ReactNode;
 };
 
 const Header = ({ title, options }: Props) => {
+	const { setIsNavBarOpen } = useAppContext();
+	const isOnMobile = useIsOnMobile();
+
 	useEffect(() => {
 		document.title = `DiaBuddy | ${title}`;
 	}, [title]);
 
 	return (
 		<header className="flex items-center justify-between px-4 py-5 text-3xl font-extrabold border-b shadow-sm rounded-bl-2xl text-primary">
+			<button hidden={!isOnMobile}>
+				<MobileMenuIcon
+					title="Open menu"
+					className="w-8 h-8 text-primary"
+					onClick={() => {
+						setIsNavBarOpen?.((prevValue) => !prevValue);
+					}}
+				/>
+			</button>
 			{title}
-			{options}
+			<div className="flex items-center">{options}</div>
 		</header>
 	);
 };

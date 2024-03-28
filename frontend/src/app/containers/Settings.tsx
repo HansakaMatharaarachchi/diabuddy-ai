@@ -48,7 +48,7 @@ const Settings = () => {
 
 	return (
 		<div className="flex flex-col items-center justify-center flex-1 gap-5 px-4 py-4">
-			<div className="w-2/5">
+			<div className="w-4/5 sm:w-2/5">
 				<span className="text-2xl font-bold">Your Information.</span>
 				<EditAuthenticatedUserProfile readonly />
 				<button

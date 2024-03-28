@@ -5,6 +5,7 @@
 	"dependencies": {
 		"@auth0/auth0-react": "^2.2.4",
 		"@langchain/core": "^0.1.52",
+		"@react-spring/web": "^9.7.3",
 		"@reduxjs/toolkit": "^2.2.3",
 		"@testing-library/jest-dom": "^6.4.2",
 		"@testing-library/react": "^14.2.2",
@@ -14,8 +15,10 @@
 		"@types/react": "^18.2.72",
 		"@types/react-dom": "^18.2.22",
 		"@types/react-redux": "^7.1.33",
+		"@use-gesture/react": "^10.3.1",
 		"autoprefixer": "^10.4.17",
 		"axios": "^1.7.2",
+		"lodash": "^4.17.21",
 		"moment": "^2.30.1",
 		"postcss": "^8.4.35",
 		"react": "^18.2.0",
@@ -53,7 +56,8 @@
 		]
 	},
 	"devDependencies": {
-		"@babel/plugin-proposal-private-property-in-object": "^7.21.11"
+		"@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+		"@types/lodash": "^4.17.5"
 	},
 	"overrides": {
 		"nth-check": "2.0.1"

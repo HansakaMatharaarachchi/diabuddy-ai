@@ -1,18 +1,28 @@
 import { useAuth0 } from "@auth0/auth0-react";
-import { createContext, useContext, useEffect, useMemo } from "react";
+import {
+	createContext,
+	Dispatch,
+	useContext,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
 import { Outlet, useNavigate } from "react-router-dom";
+import { ErrorPage, Loader } from "../components";
+import { User } from "../interfaces";
 import { useGetAuthenticatedUserQuery } from "../services/user";
 import { addAccessTokenInterceptor } from "../utils/axiosClient";
-import { User } from "../interfaces";
-import { Loader, ErrorPage } from "../components";
 
 type AppContextType = {
 	authenticatedUser?: User;
+	isNavBarOpen?: boolean;
+	setIsNavBarOpen?: Dispatch<React.SetStateAction<boolean>>;
 };
 
 const AppContext = createContext<AppContextType>({});
 
 export const AppContextProvider = () => {
+	const [isNavBarOpen, setIsNavBarOpen] = useState(false);
 	const navigate = useNavigate();
 
 	const {
@@ -42,8 +52,10 @@ export const AppContextProvider = () => {
 	const contextValue = useMemo(
 		() => ({
 			authenticatedUser,
+			isNavBarOpen,
+			setIsNavBarOpen,
 		}),
-		[authenticatedUser]
+		[authenticatedUser, isNavBarOpen, setIsNavBarOpen]
 	);
 
 	// Redirect to setup profile page,
