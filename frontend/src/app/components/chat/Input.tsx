@@ -27,7 +27,7 @@ const Input = ({ sendMessage, disabled }: Props) => {
 	};
 
 	return (
-		<div className="flex gap-3 px-4 py-5 border-t rounded-t-2xl">
+		<div className="flex gap-3 px-4 py-5 border-t">
 			<input
 				ref={inputRef}
 				type="text"

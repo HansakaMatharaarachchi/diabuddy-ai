@@ -1,4 +1,4 @@
-import { DiabetesType, Gender, Language } from "./constants";
+import { ChatMessageType, DiabetesType, Gender, Language } from "./constants";
 
 export interface User {
 	user_id: string;
@@ -11,6 +11,8 @@ export interface User {
 }
 
 export interface ChatMessage {
-	message_id?: string;
+	message_id: string;
 	timestamp: string;
+	content: string;
+	type: ChatMessageType;
 }

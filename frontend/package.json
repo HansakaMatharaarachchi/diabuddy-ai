@@ -23,9 +23,11 @@
 		"postcss": "^8.4.35",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
+		"react-markdown": "^9.0.1",
 		"react-redux": "^9.1.0",
 		"react-router-dom": "^6.22.1",
 		"react-scripts": "^5.0.1",
+		"remark-gfm": "^4.0.0",
 		"sweetalert2": "^11.11.1",
 		"tailwindcss": "^3.4.1",
 		"typescript": "^5.4.3",
@@ -57,6 +59,7 @@
 	},
 	"devDependencies": {
 		"@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+		"@tailwindcss/typography": "^0.5.13",
 		"@types/lodash": "^4.17.5"
 	},
 	"overrides": {

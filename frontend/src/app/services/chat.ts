@@ -5,6 +5,7 @@ import axiosBaseQuery from "../utils/axiosBaseQuery";
 
 export const chatApi = createApi({
 	reducerPath: "chatAPI",
+	tagTypes: ["ChatMessage"],
 	baseQuery: axiosBaseQuery({
 		baseUrl: USER_API_URL,
 	}),
@@ -15,12 +16,14 @@ export const chatApi = createApi({
 					url: "/me/chat",
 					method: "GET",
 				}),
+				providesTags: ["ChatMessage"],
 			}),
 			deleteAuthenticatedUserChatHistory: build.mutation<void, void>({
 				query: () => ({
 					url: "/me/chat",
 					method: "DELETE",
 				}),
+				invalidatesTags: ["ChatMessage"],
 			}),
 		};
 	},

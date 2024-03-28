@@ -16,6 +16,7 @@ const ErrorPage = () => {
 				<Link
 					to="/"
 					className="flex items-center px-4 py-2 space-x-2 text-gray-100 transition duration-150 rounded-xl bg-primary hover:ring-4 hover:ring-primary/30"
+					reloadDocument
 					title="Return to DiaBuddy"
 				>
 					<svg

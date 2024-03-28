@@ -13,3 +13,8 @@ export enum DiabetesType {
 export enum Language {
 	ENGLISH = "English",
 }
+
+export enum ChatMessageType {
+	AI = "ai",
+	HUMAN = "human",
+}
