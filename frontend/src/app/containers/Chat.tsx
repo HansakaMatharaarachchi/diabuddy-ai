@@ -7,6 +7,7 @@ import { Header } from "../layouts";
 import {
 	useDeleteAuthenticatedUserChatHistoryMutation,
 	useGetAuthenticatedUserChatHistoryQuery,
+	useSendMessageMutation,
 } from "../services/chat";
 
 const Chat = () => {
@@ -21,6 +22,8 @@ const Chat = () => {
 		refetchOnMountOrArgChange: true,
 	});
 
+	const [sendMessage, { isLoading: isSendingMessage }] =
+		useSendMessageMutation();
 	const [deleteChatHistory] = useDeleteAuthenticatedUserChatHistoryMutation();
 
 	const clearChatHistory = async () => {
@@ -65,13 +68,26 @@ const Chat = () => {
 		}
 	};
 
+	const handleSendMessage = async (query: string) => {
+		try {
+			return await sendMessage(query).unwrap();
+		} catch (error) {
+			Swal.fire({
+				title: "Oops!",
+				text: "Something went wrong while sending your message, please try again later.",
+				icon: "error",
+			});
+			throw error;
+		}
+	};
+
 	return (
 		<div className="flex flex-col h-full">
 			<Header
 				title="Chat"
 				options={
 					<>
-						{!!chatHistory?.length && (
+						{!isSendingMessage && !!chatHistory?.length && (
 							<button
 								type="button"
 								title="Clear Chat"
@@ -91,7 +107,7 @@ const Chat = () => {
 
 						{isChatHistoryError && (
 							<>
-								<span className="text-lg">
+								<span className="text-lg text-center">
 									Something went wrong while getting your chat history.
 								</span>
 								<span className="text-base">Please try again.</span>
@@ -111,7 +127,7 @@ const Chat = () => {
 						{chatHistory?.length > 0 ? (
 							<Conversation messages={chatHistory} />
 						) : (
-							<div className="flex flex-col h-full gap-2 px-4 pt-12 sm:px-0">
+							<div className="flex flex-col h-full gap-2 px-4 pt-12 xl:px-0">
 								<span className="text-6xl text-primary">
 									Hello, {authenticatedUser?.nickname}
 								</span>
@@ -123,7 +139,11 @@ const Chat = () => {
 					</>
 				)}
 				<div className={`${isChatHistoryLoading ? "animate-pulse" : ""}`}>
-					<Input disabled={!isChatHistorySuccess} sendMessage={undefined} />
+					<Input
+						disabled={!isChatHistorySuccess || isSendingMessage}
+						sendMessage={handleSendMessage}
+						isLoading={isSendingMessage}
+					/>
 				</div>
 			</div>
 		</div>

@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from "react";
+import { ReactComponent as MessageLoadingIcon } from "../../../assets/svg/message-loading.svg";
 import { ReactComponent as SendIcon } from "../../../assets/svg/send.svg";
 
 type Props = {
-	sendMessage?: (message: string) => boolean;
+	sendMessage?: (message: string) => Promise<unknown>;
 	disabled?: boolean;
+	isLoading?: boolean;
 };
 
-const Input = ({ sendMessage, disabled }: Props) => {
+const Input = ({ sendMessage, disabled, isLoading }: Props) => {
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [inputText, setInputText] = useState("");
 
@@ -16,12 +18,14 @@ const Input = ({ sendMessage, disabled }: Props) => {
 		inputRef.current?.focus();
 	}, []);
 
-	const handleSendMessage = () => {
+	const handleSendMessage = async () => {
 		if (messageText && sendMessage) {
-			if (sendMessage(messageText)) {
-				// Clear input and focus
+			try {
 				setInputText("");
+				await sendMessage(messageText);
 				inputRef.current?.focus();
+			} catch (error) {
+				setInputText(messageText);
 			}
 		}
 	};
@@ -48,10 +52,14 @@ const Input = ({ sendMessage, disabled }: Props) => {
 				className={`flex justify-center p-2 rounded-full outline-none text-white *:size-10 ${
 					messageText ? "hover:bg-primary/5 *:fill-primary" : "*:fill-gray-400"
 				}`}
-				title="Send"
+				title={isLoading ? "Loading" : "Send Message"}
 				onClick={handleSendMessage}
 			>
-				<SendIcon className="" />
+				{isLoading ? (
+					<MessageLoadingIcon className="text-primary" />
+				) : (
+					<SendIcon />
+				)}
 			</button>
 		</div>
 	);

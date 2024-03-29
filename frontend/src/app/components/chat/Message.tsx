@@ -16,20 +16,22 @@ const Message = ({ message, time, isSender }: Props) => {
 					className={`flex flex-col ${isSender ? "items-end" : "items-start"}`}
 				>
 					<div
-						className={`flex gap-2 ${
+						className={`flex gap-2 flex-wrap w-full ${
 							isSender ? "flex-row-reverse" : ""
 						} items-end`}
 					>
 						<Markdown
-							className={`px-4 py-2 text-base border rounded-t-2xl prose overflow-scroll ${
+							className={`px-4 py-2 text-base border rounded-t-2xl prose min-w-0 ${
 								isSender ? "rounded-bl-2xl" : "rounded-br-2xl"
 							}`}
 							remarkPlugins={[remarkGfm]}
 						>
 							{message}
 						</Markdown>
-						{moment.isMoment(time) && (
-							<span className="text-sm min-w-fit">{time.fromNow()}</span>
+						{time.isValid() && (
+							<span className="text-sm break-words text-slate-800 min-w-fit">
+								{time.fromNow()}
+							</span>
 						)}
 					</div>
 				</div>

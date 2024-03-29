@@ -12,11 +12,13 @@ const axiosBaseQuery =
 			data?: AxiosRequestConfig["data"];
 			params?: AxiosRequestConfig["params"];
 			headers?: AxiosRequestConfig["headers"];
+			responseType?: AxiosRequestConfig["responseType"];
+			adapter?: AxiosRequestConfig["adapter"];
 		},
 		unknown,
 		unknown
 	> =>
-	async ({ url, method, data, params, headers }) => {
+	async ({ url, method, data, params, headers, responseType, adapter }) => {
 		try {
 			const result = await axiosClient({
 				url: baseUrl + url,
@@ -24,6 +26,8 @@ const axiosBaseQuery =
 				data,
 				params,
 				headers,
+				responseType,
+				adapter,
 			});
 			return { data: result.data };
 		} catch (axiosError) {

@@ -26,6 +26,7 @@ export const Auth0ProviderWithNavigate = () => {
 				redirect_uri: redirectUri,
 			}}
 			useRefreshTokens
+			useRefreshTokensFallback
 			cacheLocation="localstorage"
 			onRedirectCallback={onRedirectCallback}
 		>

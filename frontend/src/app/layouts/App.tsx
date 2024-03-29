@@ -5,6 +5,7 @@ import { ReactComponent as MobileMenuIcon } from "../../assets/svg/menu.svg";
 import { useAppContext } from "../contexts";
 import useIsOnMobile from "../hooks/useIsOnMobile";
 import NavBar from "./NavBar";
+import Swal from "sweetalert2";
 
 type Props = {
 	children?: ReactNode;
@@ -20,6 +21,24 @@ const AppLayout = ({ children }: Props) => {
 		transform: isNavBarOpen ? "translateX(0%)" : "translateX(-100%)",
 		config: config.stiff,
 	});
+
+	const logoutHandler = () => {
+		Swal.fire({
+			title: "Are you sure?",
+			text: "You are about to logout from DiaBuddy",
+			icon: "warning",
+			showCancelButton: true,
+			confirmButtonText: "Yes, logout",
+		}).then((result) => {
+			if (result.isConfirmed) {
+				logout({
+					logoutParams: {
+						returnTo: window.location.origin,
+					},
+				});
+			}
+		});
+	};
 
 	return (
 		<div className="relative flex w-full h-dvh">
@@ -38,13 +57,7 @@ const AppLayout = ({ children }: Props) => {
 						/>
 					</button>
 					<NavBar
-						logout={() =>
-							logout({
-								logoutParams: {
-									returnTo: window.location.origin,
-								},
-							})
-						}
+						logout={logoutHandler}
 						onNavLinkClick={() => setIsNavBarOpen?.(false)}
 					/>
 				</div>

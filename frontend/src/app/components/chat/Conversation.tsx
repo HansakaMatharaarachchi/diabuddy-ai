@@ -1,5 +1,5 @@
 import moment from "moment";
-import { useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef } from "react";
 import { ChatMessageType } from "../../constants";
 import { ChatMessage } from "../../interfaces";
 import Message from "./Message";
@@ -9,15 +9,21 @@ type Props = {
 };
 
 const Conversation = ({ messages }: Props) => {
-	const messagesEndRef = useRef<HTMLDivElement>(null);
+	const conversationContainerRef = useRef<HTMLDivElement>(null);
 
 	// Scroll to bottom of the chat on messages change.
 	useEffect(() => {
-		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+		conversationContainerRef.current?.scrollTo({
+			top: conversationContainerRef.current.scrollHeight,
+			behavior: "smooth",
+		});
 	}, [messages]);
 
 	return (
-		<div className="relative flex flex-col flex-1 gap-3 px-4 py-4 overflow-y-scroll">
+		<div
+			className="relative flex flex-col flex-1 gap-3 px-4 py-4 overflow-y-scroll scroll-smooth"
+			ref={conversationContainerRef}
+		>
 			{messages?.map((message: ChatMessage, index: number) => {
 				const isNewDate =
 					index === 0 ||
@@ -26,15 +32,13 @@ const Conversation = ({ messages }: Props) => {
 						"day"
 					);
 				const isSender = message.type === ChatMessageType.HUMAN;
+				const messageTimeStampMoment = moment(message.timestamp);
 
 				return (
-					<>
-						{isNewDate && (
-							<div
-								className="sticky top-0 flex self-center justify-center p-2 text-sm font-bold rounded-lg bg-slate-200/90"
-								key={`date-${message.message_id}-${message.timestamp}`}
-							>
-								{moment().calendar(message.timestamp, {
+					<Fragment key={message.message_id}>
+						{isNewDate && messageTimeStampMoment.isValid() && (
+							<div className="sticky top-0 z-40 flex self-center justify-center p-2 m-1 text-sm font-bold rounded-lg bg-slate-200 min-w-36">
+								{messageTimeStampMoment.calendar(null, {
 									sameDay: "[Today]",
 									lastDay: "[Yesterday]",
 									lastWeek: "dddd",
@@ -44,13 +48,12 @@ const Conversation = ({ messages }: Props) => {
 						)}
 						<Message
 							message={message.content}
-							time={moment(message.timestamp)}
+							time={messageTimeStampMoment}
 							isSender={isSender}
 						/>
-					</>
+					</Fragment>
 				);
 			})}
-			<div ref={messagesEndRef} />
 		</div>
 	);
 };
