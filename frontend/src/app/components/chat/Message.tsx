@@ -1,4 +1,4 @@
-import moment, { Moment } from "moment";
+import { Moment } from "moment";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
