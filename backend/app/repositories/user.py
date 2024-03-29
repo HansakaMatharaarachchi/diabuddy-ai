@@ -1,21 +1,12 @@
 from typing import Optional
 
 from app.dependencies.auth import get_user_manager
+from app.exceptions.common import NotFoundException
 from app.models.user import User
 from app.schemas.user import UpdateUser
 from auth0 import Auth0Error
 from auth0.management import Users
 from fastapi import Depends
-
-
-# Exception to raise when user is not found.
-class UserNotFound(Exception):
-    def __init__(
-        self,
-        message="User not found",
-    ):
-        self.message = message
-        super().__init__(self.message)
 
 
 class UserRepository:
@@ -74,7 +65,7 @@ class UserRepository:
             return self.get_user_by_id(user_id)
         except Auth0Error as ae:
             if ae.status_code == 404:
-                raise UserNotFound()
+                raise NotFoundException("User not found")
             raise ae
 
     def delete_user_by_id(self, user_id: str) -> None:
@@ -87,5 +78,5 @@ class UserRepository:
             self.users.delete(user_id)
         except Auth0Error as ae:
             if ae.status_code == 404:
-                raise UserNotFound()
+                raise NotFoundException("User not found")
             raise ae

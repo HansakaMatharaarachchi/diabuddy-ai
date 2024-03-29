@@ -1,8 +1,8 @@
 from typing import Optional
 
 from app.models.user import User
-from app.repositories.Chat import ChatRepository
-from app.repositories.User import UserRepository
+from app.repositories.chat import ChatRepository
+from app.repositories.user import UserRepository
 from app.schemas.user import UpdateUser
 from fastapi import Depends
 
@@ -54,7 +54,7 @@ class UserService:
         try:
             async with await self.chat_repo.db.client.start_session() as session:
                 async with session.start_transaction():
-                    await self.chat_repo.delete_chats_by_user_id(user_id)
+                    await self.chat_repo.delete_messages_by_user_id(user_id)
                     self.user_repo.delete_user_by_id(user_id)
                     await session.commit_transaction()
         except Exception as e:

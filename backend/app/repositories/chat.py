@@ -1,15 +1,13 @@
 from typing import List
 
 from app.dependencies.database import get_database
-from app.models.chat import ChatMessage
 from fastapi import Depends
 from langchain_core.messages import messages_from_dict
-from langchain_core.messages.base import message_to_dict
+from langchain_core.messages.base import BaseMessage, message_to_dict
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 
 class ChatRepository:
-
     def __init__(self, db: AsyncIOMotorDatabase = Depends(get_database)):
         """Initialize chat repository.
 
@@ -19,38 +17,46 @@ class ChatRepository:
         self.db = db
         self.message_collection = self.db["chat_message_history_collection"]
 
-    async def add_message(self, user_id: str, message: ChatMessage) -> ChatMessage:
-        """Add chat message to the user.
+    async def add_messages(
+        self, user_id: str, messages: List[BaseMessage]
+    ) -> List[BaseMessage]:
+        """Add chat messages to the user.
 
         Args:
             user_id (str): ID of the user.
-            message (ChatMessage): Chat message.
+            messages (List[BaseMessage]): List of chat messages.
 
         Raises:
-            Exception: Failed to add message to the user.
+            Exception: Failed to add messages to the user.
 
         Returns:
-            ChatMessage: Chat message.
+            List[BaseMessage]: List of chat messages.
         """
         result = await self.message_collection.update_one(
             {"user_id": user_id},
-            {"$push": {"messages": message_to_dict(message)}},
+            {
+                "$push": {
+                    "messages": {
+                        "$each": [message_to_dict(message) for message in messages],
+                    }
+                }
+            },
             upsert=True,
         )
 
         if not result.acknowledged:
-            raise Exception("Failed to add message to the user")
+            raise Exception("Failed to add messages to the user")
 
-        return message
+        return messages
 
-    async def get_messages_by_user_id(self, user_id: str) -> List[ChatMessage] | None:
+    async def get_messages_by_user_id(self, user_id: str) -> List[BaseMessage] | None:
         """Get chat messages of the user.
 
         Args:
             user_id (str): ID of the user.
 
         Returns:
-            List[ChatMessage] | None: List of chat messages or None if user has no messages.
+            List[BaseMessage] | None: List of chat messages or None if user has no messages.
         """
         user_messages = await self.message_collection.find_one({"user_id": user_id})
 
@@ -59,7 +65,7 @@ class ChatRepository:
 
         return messages_from_dict(user_messages.get("messages", []))
 
-    async def delete_chats_by_user_id(self, user_id: str):
+    async def delete_messages_by_user_id(self, user_id: str):
         """Delete chat messages of the user.
 
         Args:

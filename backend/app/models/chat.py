@@ -1,7 +1,8 @@
-from uuid import uuid4
 from datetime import datetime
+from uuid import uuid4
+
 from langchain_core.messages import BaseMessage
-from pydantic import BaseModel
+from pydantic import Field
 
 
 class ChatMessage(BaseMessage):
@@ -11,16 +12,16 @@ class ChatMessage(BaseMessage):
         BaseMessage (_type_): Base message class.
     """
 
-    message_id: str
-    timestamp: datetime
+    message_id: str = Field(default_factory=lambda: str(uuid4()))
+    timestamp: datetime = Field(default_factory=datetime.now)
 
     def __init__(self, content, **kwargs):
+        # Extract existing ID and timestamp if present.
+        existing_id = kwargs.pop("message_id", None)
+        existing_timestamp = kwargs.pop("timestamp", None)
+
         super().__init__(content, **kwargs)
 
-        self.message_id = str(uuid4())
-        self.timestamp = datetime.now()
-
-
-class ChatHistory(BaseModel):
-    user_id: str
-    messages: list[ChatMessage]
+        # Set the message_id and timestamp
+        self.message_id = existing_id or self.message_id
+        self.timestamp = existing_timestamp or self.timestamp
