@@ -1,20 +1,20 @@
-from enum import Enum
+from enum import StrEnum
 from typing import Optional
 
 from pydantic import BaseModel, Field, root_validator
 
 
-class Gender(str, Enum):
+class Gender(StrEnum):
     MALE = "Male"
     FEMALE = "Female"
 
 
-class DiabetesType(str, Enum):
+class DiabetesType(StrEnum):
     TYPE_1 = "Type 1"
     TYPE_2 = "Type 2"
 
 
-class Language(str, Enum):
+class Language(StrEnum):
     ENGLISH = "English"
 
 
