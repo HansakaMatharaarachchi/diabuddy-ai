@@ -1,6 +1,6 @@
 from typing import AsyncGenerator
 
-from app.chains.chat import rag_chain
+from app.chains.agentic import agent_executor
 from app.exceptions.common import NotFoundException
 from app.repositories.chat import ChatRepository
 from app.repositories.user import UserRepository
@@ -21,7 +21,7 @@ class ChatService:
         """
         self.chat_repo = chat_repo
         self.user_repo = user_repo
-        self.rag_chain = rag_chain
+        self.rag_agent_executor = agent_executor
 
     async def stream_ai_response(
         self, user_id: str, query: str
@@ -52,8 +52,10 @@ class ChatService:
         user_data["chat_history"] = await self.get_messages(user_id) or []
 
         # Stream AI message chunks.
-        async for chunk in self.rag_chain.astream({"input": query, **user_data}):
-            ai_response = chunk.get("answer")
+        async for chunk in self.rag_agent_executor.astream(
+            {"input": query, **user_data}
+        ):
+            ai_response = chunk.get("output")
 
             if ai_response != None:
                 yield ai_response
