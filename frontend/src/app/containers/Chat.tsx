@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Swal from "sweetalert2";
 import { ReactComponent as ClearIcon } from "../../assets/svg/clear.svg";
 import { ReactComponent as RefreshIcon } from "../../assets/svg/refresh.svg";
@@ -24,48 +25,63 @@ const Chat = () => {
 
 	const [sendMessage, { isLoading: isSendingMessage }] =
 		useSendMessageMutation();
-	const [deleteChatHistory] = useDeleteAuthenticatedUserChatHistoryMutation();
+	const [
+		deleteChatHistory,
+		{
+			isLoading: isDeletingChatHistory,
+			isError: isDeleteChatHistoryError,
+			isSuccess: isDeleteChatHistorySuccess,
+		},
+	] = useDeleteAuthenticatedUserChatHistoryMutation();
+
+	useEffect(() => {
+		(async () => {
+			if (isDeletingChatHistory) {
+				Swal.fire({
+					title: "Clearing Chat",
+					text: "Clearing chat history...",
+					icon: "info",
+					showConfirmButton: false,
+					showCancelButton: false,
+					allowOutsideClick: false,
+					didOpen: () => {
+						Swal.showLoading();
+					},
+				});
+			} else if (isDeleteChatHistoryError) {
+				Swal.fire({
+					title: "Oops!",
+					text: "Something went wrong while clearing chat history, please try again later.",
+					icon: "error",
+				});
+			} else if (isDeleteChatHistorySuccess) {
+				await Swal.fire({
+					title: "Success",
+					text: "Chat history cleared successfully",
+					icon: "success",
+					timer: 1500,
+				});
+			}
+		})();
+	}, [
+		isDeleteChatHistoryError,
+		isDeleteChatHistorySuccess,
+		isDeletingChatHistory,
+	]);
 
 	const clearChatHistory = async () => {
-		try {
-			await Swal.fire({
-				title: "Clear Chat",
-				text: "Are you sure you want to clear chat history?",
-				icon: "warning",
-				showCancelButton: true,
-				confirmButtonText: "Yes",
-				cancelButtonText: "No",
-			}).then(async (result) => {
-				if (result.isConfirmed) {
-					Swal.fire({
-						title: "Clearing Chat",
-						text: "Clearing chat history...",
-						icon: "info",
-						showConfirmButton: false,
-						showCancelButton: false,
-						allowOutsideClick: false,
-						didOpen: () => {
-							Swal.showLoading();
-						},
-					});
-					await deleteChatHistory();
-					await Swal.fire({
-						title: "Success",
-						text: "Chat history cleared successfully",
-						icon: "success",
-						timer: 1500,
-					});
-				}
-			});
-		} catch (error) {
-			Swal.fire({
-				title: "Oops!",
-				text: "Something went wrong while clearing chat history, please try again later.",
-				icon: "error",
-			});
-		} finally {
-			Swal.close();
-		}
+		await Swal.fire({
+			title: "Clear Chat",
+			text: "Are you sure you want to clear chat history?",
+			icon: "warning",
+			showCancelButton: true,
+			confirmButtonText: "Yes",
+			cancelButtonText: "No",
+		}).then(async (result) => {
+			if (result.isConfirmed) {
+				await deleteChatHistory();
+			}
+		});
 	};
 
 	const handleSendMessage = async (query: string) => {
