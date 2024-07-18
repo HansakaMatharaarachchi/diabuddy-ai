@@ -26,7 +26,7 @@ agentic_prompt = PromptTemplate.from_template(
     - Diabetes Type: {diabetes_type}
     - Preferred Language: {preferred_language}
 
-    The new query is enclosed in a 9h#%jk phrase.
+    The new query is enclosed in a 7x&@mn phrase.
     When your patient asks a new query, you should follow these guidelines strictly.
 
     1. Address patient by name when needed and use their preferred language.
@@ -72,7 +72,7 @@ agentic_prompt = PromptTemplate.from_template(
     Previous conversation history:
     {chat_history}
 
-    New input: {input}
+    New input: 7x&@mn {input} 7x&@mn
     {agent_scratchpad}
     """
 )
